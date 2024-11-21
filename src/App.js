@@ -43,9 +43,23 @@ const App = () => {
           let extractedData = {};
 
           if (selectedFile.type === "application/json") {
-            // Handle JSON files directly
-            extractedData = JSON.parse(content);
-            extractedData = formatMovieData(extractedData);
+            const parsedData = JSON.parse(content);
+            // Check for structured JSON format
+            if (parsedData.movie) {
+              // Structured format like { "movie": { "title": "..." } }
+              extractedData = {
+                title: parsedData.movie.title || "Not Available",
+                director: parsedData.movie.director || "Not Available",
+                producer: parsedData.movie.producer || "Not Available",
+                musicComposer: parsedData.movie.musicComposer || "Not Available",
+              };
+            } 
+            // Check for plain text embedded in JSON
+            else if (parsedData.movieDetails) {
+              extractedData = extractMovieDataFromText(parsedData.movieDetails);
+            } else {
+              throw new Error("Invalid JSON structure.");
+            }
           } 
           else if (selectedFile.type === "application/pdf") {
             const pdfDoc = await PDFDocument.load(content);
@@ -111,7 +125,7 @@ const App = () => {
     const titleMatch = textContent.match(/Title:\s*([^\n]+)/i);
     const directorMatch = textContent.match(/Director:\s*([^\n]+)/i);
     const producerMatch = textContent.match(/Producer:\s*([^\n]+)/i);
-    const composerMatch = textContent.match(/Music Composer:\s*([^\n]+)/i);
+    const composerMatch = textContent.match(/Music\s*Composer\s*[:|-]?\s*([^\n]+)/i); // Updated regex
 
     return {
       title: titleMatch ? titleMatch[1].trim() : "Not Available",
@@ -121,20 +135,14 @@ const App = () => {
     };
   };
 
-  const formatMovieData = (data) => {
-    return {
-      title: data.title || "Not Available",
-      director: data.director || "Not Available",
-      producer: data.producer || "Not Available",
-      musicComposer: data.musicComposer || "Not Available"
-    };
-  };
-
   const handleFileDelete = () => {
     setFile(null);
     setFileName("");
     setMovieTitleData(null);
     setError(null);
+
+    // Clear the input field value to allow re-uploading the same file
+    document.getElementById('file-input').value = '';
   };
 
   return (

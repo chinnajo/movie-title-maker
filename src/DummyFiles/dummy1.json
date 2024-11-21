@@ -1,6 +1,10 @@
 {
-  "title": "The Adventure Begins",
-  "director": "John Doe",
-  "producer": "Jane Smith",
-  "musicComposer": "Liam Johnson"
+  "movie": {
+    "title": "The Adventure Begins",
+    "director": "John Doe",
+    "producer": "Jane Smith",
+    "musicComposer": "Liam Johnson"
+  }
 }
+
+
